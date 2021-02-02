@@ -20,6 +20,10 @@ Run `across` in the programs directory.
 
 `-m` Set custom binary information
 
+Examples
+--------
+[Goscrape](https://github.com/lordrusk/goscrape) uses across for its releases.
+
 FQA - Frequently Questioned Answers
 -----------------------------------
 - Why does ______ fail to compile?
