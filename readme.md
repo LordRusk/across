@@ -14,8 +14,14 @@ How?
 ----
 Run `across` in the programs directory.
 
+`-h` Show help menu
+
+`-v` Set version for binaries
+
+`-m` Set custom binary information
+
 FQA - Frequently Questioned Answers
----
+-----------------------------------
 - Why does ______ fail to compile?
 	I know as much as you. Figure it out.
 	If it ends up being an across issue,
