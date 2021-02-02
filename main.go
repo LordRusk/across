@@ -29,51 +29,28 @@ func main() {
 	// compile
 	for _, sys := range systems {
 		for _, arch := range sys.archs {
-			var execName string
+			execName := programName
+			if *version != "" {
+				execName += "-" + *version
+			}
+			if *message != "" {
+				execName += "-" + *message
+			}
+			execName += "-" + sys.name + "-" + arch
 			if sys.name == "windows" {
-				execName = programName
-				if *version != "" {
-					execName += "-" + *version
-				}
-				if *message != "" {
-					execName += "-" + *message
-				}
-				execName += "-" + sys.name + "-" + arch + ".exe"
-			} else {
-				execName = programName
-				if *version != "" {
-					execName += "-" + *version
-				}
-				if *message != "" {
-					execName += "-" + *message
-				}
-				execName += "-" + sys.name + "-" + arch
+				execName += ".exe"
 			}
 
 			fmt.Printf("Compiling %s...\n", execName)
-			if err := os.Setenv("GOOS", sys.name); err != nil {
-				fmt.Printf("Failed to compile: %s\n", err)
-				continue
-			}
 
-			if err := os.Setenv("GOARCH", arch); err != nil {
-				fmt.Printf("Failed to compile: %s\n", err)
-				continue
-			}
-
-			output, err := exec.Command("go", "build").CombinedOutput()
+			cmd := exec.Command("go", "build", "-o", execName)
+			cmd.Env = append(os.Environ(),
+				"GOOS="+sys.name,
+				"GOARCH="+arch,
+			)
+			output, err := cmd.CombinedOutput()
 			if err != nil {
 				fmt.Printf("Failed to compile!: %s: %s\n", output, err)
-				continue
-			}
-
-			if sys.name == "windows" {
-				err = os.Rename(programName+".exe", execName)
-			} else {
-				err = os.Rename(programName, execName)
-			}
-			if err != nil {
-				fmt.Printf("Failed to rename '%s' to '%s': %s\n", programName, execName, err)
 			}
 		}
 	}
