@@ -20,6 +20,10 @@ Run `across` in the programs directory.
 
 `-m` Set custom binary information
 
+'-p' Set the number of parallel compiles
+
+`c` Set the number of parallel compiles to the number of cores (overwrites `-p`)
+
 Examples
 --------
 [Goscrape](https://github.com/lordrusk/goscrape) uses across for its releases.
