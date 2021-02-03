@@ -67,7 +67,7 @@ func main() {
 	swd := strings.Split(wd, "/")
 	programName = swd[len(swd)-1]
 
-	stChan = make(chan []string, *parallel) // start chan
+	stChan := make(chan []string, *parallel) // start chan
 	go func() {
 		for s := range stChan {
 			compile(s[0], s[1])
