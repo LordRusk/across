@@ -14,16 +14,24 @@ type system struct {
 	archs []string
 }
 
-var version = flag.String("v", "", "Set version for binaries")
-var message = flag.String("m", "", "Set custom binary information")
-var parallel = flag.Int("p", 1, "Set the number of parallel compiles")
-var useCPUs = flag.Bool("c", false, "Set the number of parallel compiles to the number of cores (overwrites `-p`)")
+var (
+	binName  = flag.String("n", "", "Set a custom binary name")
+	version  = flag.String("v", "", "Set version for binaries")
+	message  = flag.String("m", "", "Set custom binary information")
+	parallel = flag.Int("p", 1, "Set the number of parallel compiles")
+	useCPUs  = flag.Bool("c", false, "Set the number of parallel compiles to the number of cores (overwrites `-p`)")
+)
 
 var programName string
 var fsChan = make(chan interface{})
 
 func compile(sys, arch string) {
-	execName := programName
+	var execName string
+	if *binName != "" {
+		execName = *binName
+	} else {
+		execName = programName
+	}
 	if *version != "" {
 		execName += "-" + *version
 	}

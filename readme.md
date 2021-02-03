@@ -16,13 +16,15 @@ Run `across` in the programs directory.
 
 `-h` Show help menu
 
+`-n` Set a custom binary name
+
 `-v` Set version for binaries
 
 `-m` Set custom binary information
 
 `-p` Set the number of parallel compiles
 
-`c` Set the number of parallel compiles to the number of cores (overwrites `-p`)
+`-c` Set the number of parallel compiles to the number of cores (overwrites `-p`)
 
 Examples
 --------
