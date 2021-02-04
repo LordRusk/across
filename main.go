@@ -76,6 +76,7 @@ func main() {
 	programName = swd[len(swd)-1]
 
 	stChan := make(chan []string, *parallel) // start chan
+	defer close(stChan)
 	go func() {
 		for s := range stChan {
 			compile(s[0], s[1])
