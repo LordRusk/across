@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -14,6 +15,11 @@ type system struct {
 	archs []string
 }
 
+type finState struct {
+	filename string // filename
+	err      error
+}
+
 var (
 	binName  = flag.String("n", "", "Set a custom binary name")
 	version  = flag.String("v", "", "Set version for binaries")
@@ -23,41 +29,37 @@ var (
 )
 
 var programName string
-var fsChan = make(chan interface{})
 
-func compile(sys, arch string) {
-	var execName string
-	if *binName != "" {
-		execName = *binName
-	} else {
-		execName = programName
-	}
-	if *version != "" {
-		execName += "-" + *version
-	}
-	if *message != "" {
-		execName += "-" + *message
-	}
-	execName += "-" + sys + "-" + arch
-	if sys == "windows" {
-		execName += ".exe"
-	}
+func compiler(i chan []string, o chan finState) {
+	for strs := range i {
+		var fs finState
+		if *binName != "" {
+			fs.filename = *binName
+		} else {
+			fs.filename = programName
+		}
+		if *version != "" {
+			fs.filename += "-" + *version
+		}
+		if *message != "" {
+			fs.filename += "-" + *message
+		}
+		fs.filename += "-" + strs[0] + "-" + strs[1]
+		if strs[0] == "windows" {
+			fs.filename += ".exe"
+		}
 
-	cmd := exec.Command("go", "build", "-o", execName)
-	cmd.Env = append(os.Environ(),
-		"GOOS="+sys,
-		"GOARCH="+arch,
-	)
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Printf("Failed to compile %s: %s: %s\n", execName, output, err)
-		return
-	}
+		cmd := exec.Command("go", "build", "-o", fs.filename)
+		cmd.Env = append(os.Environ(),
+			"GOOS="+strs[0],
+			"GOARCH="+strs[1],
+		)
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			fs.err = fmt.Errorf("Failed to compile %s: %s: %s\n", fs.filename, output, err)
+		}
 
-	log.Printf("Finished compiling %s\n", execName)
-	select {
-	case fsChan <- nil:
-	default:
+		o <- fs
 	}
 }
 
@@ -75,23 +77,27 @@ func main() {
 	swd := strings.Split(wd, "/")
 	programName = swd[len(swd)-1]
 
-	stChan := make(chan []string, *parallel) // start chan
-	defer close(stChan)
-	go func() {
-		for s := range stChan {
-			compile(s[0], s[1])
-		}
-	}()
+	i := make(chan []string, NUMSYS)
+	o := make(chan finState, NUMSYS)
+	defer close(i)
+	defer close(o)
 
-	for _, sys := range systems {
+	for x := 0; x < *parallel; x++ {
+		go compiler(i, o)
+	}
+
+	for _, sys := range systems { // compile
 		for _, arch := range sys.archs {
-			stChan <- []string{sys.name, arch}
+			i <- []string{sys.name, arch}
 		}
 	}
 
-	for i := 0; i <= *parallel; i++ {
-		select {
-		case <-fsChan:
+	for x := 0; x < NUMSYS; x++ {
+		fs := <-o
+		if fs.err != nil {
+			log.Print(fs.err)
+		} else {
+			log.Printf("Finished compiling %s\n", fs.filename)
 		}
 	}
 }
