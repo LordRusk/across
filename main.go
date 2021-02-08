@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"log"
@@ -29,6 +30,7 @@ var (
 )
 
 var programName string
+var logger = log.New(os.Stdout, "across: ", log.Ltime)
 
 func compiler(i chan []string, o chan finState) {
 	for strs := range i {
@@ -56,7 +58,7 @@ func compiler(i chan []string, o chan finState) {
 		)
 		output, err := cmd.CombinedOutput()
 		if err != nil {
-			fs.err = fmt.Errorf("Failed to compile %s: %s: %s\n", fs.filename, output, err)
+			fs.err = fmt.Errorf("Failed to compile %s: %s: %s\n", fs.filename, bytes.TrimSpace(output), err)
 		}
 
 		o <- fs
@@ -95,9 +97,9 @@ func main() {
 	for x := 0; x < NUMSYS; x++ {
 		fs := <-o
 		if fs.err != nil {
-			log.Print(fs.err)
+			logger.Print(fs.err)
 		} else {
-			log.Printf("Finished compiling %s\n", fs.filename)
+			logger.Printf("Finished compiling %s\n", fs.filename)
 		}
 	}
 }
