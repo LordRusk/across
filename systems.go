@@ -1,8 +1,5 @@
 package main
 
-// there are 28 supported system types
-const NUMSYS = 38
-
 // supported operating systems
 // with their support architectures.
 var systems = []system{

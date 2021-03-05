@@ -79,8 +79,8 @@ func main() {
 	swd := strings.Split(wd, "/")
 	programName = swd[len(swd)-1]
 
-	i := make(chan []string, NUMSYS)
-	o := make(chan finState, NUMSYS)
+	i := make(chan []string, 512)
+	o := make(chan finState, 512)
 	defer close(i)
 	defer close(o)
 
@@ -88,8 +88,10 @@ func main() {
 		go compiler(i, o)
 	}
 
-	for _, sys := range systems { // compile
+	var NUMSYS int
+	for _, sys := range systems {
 		for _, arch := range sys.archs {
+			NUMSYS++
 			i <- []string{sys.name, arch}
 		}
 	}
