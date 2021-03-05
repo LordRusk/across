@@ -17,7 +17,7 @@ type system struct {
 }
 
 type finState struct {
-	filename string // filename
+	filename string
 	err      error
 }
 
@@ -30,7 +30,7 @@ var (
 )
 
 var programName string
-var logger = log.New(os.Stdout, "across: ", log.Ltime)
+var logger = log.New(os.Stdout, "", log.Ltime)
 
 func compiler(i chan []string, o chan finState) {
 	for strs := range i {
